@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Consistency Tracker</title>
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Consistency">
+<meta name="theme-color" content="#111827">
+<style>
+:root{
+  --bg:#f5f6f8;--card:#ffffff;--text:#17181a;--muted:#6b7280;--line:#e5e7eb;
+  --accent:#111827;--good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:900px;margin:0 auto;padding:20px}
+h1{font-size:28px;margin:0 0 6px}
+.sub{color:var(--muted);margin-bottom:18px}
+.grid{display:grid;gap:14px}
+@media(min-width:760px){.grid.two{grid-template-columns:1.2fr .8fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.card h2{font-size:18px;margin:0 0 12px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.name{font-weight:600}
+.meta{font-size:13px;color:var(--muted);margin-top:2px}
+.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+button{font:inherit;border:1px solid var(--line);background:#fff;color:var(--text);border-radius:10px;padding:9px 11px;cursor:pointer}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.active.good{background:#ecfdf5;border-color:#99f6e4;color:var(--good)}
+button.active.bad{background:#fef2f2;border-color:#fecaca;color:var(--bad)}
+button.active.skip{background:#f3f4f6;border-color:#d1d5db;color:#4b5563}
+input[type="number"]{width:88px;padding:9px;border:1px solid var(--line);border-radius:10px;font:inherit}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:600px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat .v{font-size:24px;font-weight:700}
+.stat .l{font-size:12px;color:var(--muted)}
+.bar{height:10px;background:#eef0f3;border-radius:999px;overflow:hidden;margin-top:10px}
+.fill{height:100%;background:var(--accent);width:0%}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.day{border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.day .d{font-size:12px;color:var(--muted)}
+.day .pct{font-weight:700;margin-top:5px}
+textarea{width:100%;min-height:90px;padding:10px;border:1px solid var(--line);border-radius:10px;font:inherit}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.small{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Consistency Tracker</h1>
+  <div class="sub">Built for weekly review, not checkbox overload.</div>
+
+  <div class="grid two">
+    <section class="card">
+      <h2 id="todayTitle">Today</h2>
+
+      <div class="row" data-habit="wake">
+        <div><div class="name">Up by 6:00 AM</div><div class="meta">Daily anchor</div></div>
+        <div class="actions">
+          <button data-status="done">Done</button><button data-status="fail">Missed</button><button data-status="skip">Skip</button>
+        </div>
+      </div>
+
+      <div class="row" data-habit="internet">
+        <div><div class="name">Nonproductive internet ≤ 60 min</div><div class="meta">Enter actual minutes</div></div>
+        <div class="actions">
+          <input type="number" min="0" max="1440" step="1" placeholder="min" data-value="internet">
+          <button data-status="done">Done</button><button data-status="fail">Missed</button>
+        </div>
+      </div>
+
+      <div class="row" data-habit="workout">
+        <div><div class="name">Workout / Training</div><div class="meta">Target 4×/week</div></div>
+        <div class="actions">
+          <button data-status="done">Done</button><button data-status="fail">Missed</button><button data-status="skip">Rest</button>
+        </div>
+      </div>
+
+      <div class="row" data-habit="mobility">
+        <div><div class="name">Mobility / Yoga ≥ 10 min</div><div class="meta">Enter minutes</div></div>
+        <div class="actions">
+          <input type="number" min="0" max="300" step="1" placeholder="min" data-value="mobility">
+          <button data-status="done">Done</button><button data-status="fail">Missed</button>
+        </div>
+      </div>
+
+      <div class="row" data-habit="school">
+        <div><div class="name">Focused Schoolwork</div><div class="meta">Track actual focused hours</div></div>
+        <div class="actions">
+          <input type="number" min="0" max="16" step="0.25" placeholder="hr" data-value="school">
+          <button data-status="done">Done</button><button data-status="fail">Missed</button>
+        </div>
+      </div>
+
+      <div class="row" data-habit="calendar">
+        <div><div class="name">Follow Calendar / No Missed Commitments</div><div class="meta">Daily reliability signal</div></div>
+        <div class="actions">
+          <button data-status="done">Done</button><button data-status="fail">Missed</button>
+        </div>
+      </div>
+
+      <div class="row" data-habit="abstinence">
+        <div><div class="name">No Porn / Masturbation</div><div class="meta">Daily</div></div>
+        <div class="actions">
+          <button data-status="done">Done</button><button data-status="fail">Missed</button>
+        </div>
+      </div>
+
+      <div class="row" data-habit="plan">
+        <div><div class="name">Plan Tomorrow Before Bed</div><div class="meta">Review calendar + choose #1 priority</div></div>
+        <div class="actions">
+          <button data-status="done">Done</button><button data-status="fail">Missed</button>
+        </div>
+      </div>
+
+      <div class="row" data-habit="reset">
+        <div><div class="name">Daily Reset</div><div class="meta">Hygiene, clothes, desk/room reset</div></div>
+        <div class="actions">
+          <button data-status="done">Done</button><button data-status="fail">Missed</button>
+        </div>
+      </div>
+
+      <div class="row" data-habit="priority">
+        <div><div class="name">Meaningful Progress on #1 Priority</div><div class="meta">The day's highest-leverage outcome</div></div>
+        <div class="actions">
+          <button data-status="done">Done</button><button data-status="fail">Missed</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <h2>This Week</h2>
+        <div class="stats">
+          <div class="stat"><div class="v" id="weekScore">0%</div><div class="l">Consistency</div></div>
+          <div class="stat"><div class="v" id="wakeScore">0/7</div><div class="l">Wake by 6</div></div>
+          <div class="stat"><div class="v" id="workoutScore">0/4</div><div class="l">Workout target</div></div>
+          <div class="stat"><div class="v" id="internetAvg">–</div><div class="l">Avg wasted min</div></div>
+        </div>
+        <div class="bar"><div class="fill" id="weekFill"></div></div>
+        <div class="week" id="weekGrid" style="margin-top:14px"></div>
+      </section>
+
+      <section class="card">
+        <h2>Weekly Notes</h2>
+        <textarea id="notes" placeholder="Wins, misses, changes, reasons, anything you want included in Sunday review..."></textarea>
+      </section>
+
+      <section class="card">
+        <h2>Data</h2>
+        <div class="toolbar">
+          <button class="primary" id="exportBtn">Export weekly JSON</button>
+          <button id="copyBtn">Copy weekly summary</button>
+          <button id="resetBtn">Reset all data</button>
+        </div>
+        <div class="small" style="margin-top:10px">Your data stays in this browser on this device.</div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY='consistency-tracker-v1';
+const habits=['wake','internet','workout','mobility','school','calendar','abstinence','plan','reset','priority'];
+const state=JSON.parse(localStorage.getItem(KEY)||'{}');
+state.days=state.days||{};
+state.notes=state.notes||'';
+
+function iso(d){return d.toISOString().slice(0,10)}
+function today(){const d=new Date(); return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function getDay(date=iso(today())){state.days[date]=state.days[date]||{}; return state.days[date]}
+function save(){state.notes=document.getElementById('notes').value; localStorage.setItem(KEY,JSON.stringify(state)); render()}
+function weekDates(){
+  const t=today(); const day=t.getDay(); const monday=new Date(t); monday.setDate(t.getDate()-((day+6)%7));
+  return Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d})
+}
+function setStatus(h,s){
+  const d=getDay(); d[h]=d[h]||{}; d[h].status=s;
+  if(h==='internet' && typeof d[h].value==='number') d[h].status=d[h].value<=60?'done':'fail';
+  if(h==='mobility' && typeof d[h].value==='number') d[h].status=d[h].value>=10?'done':'fail';
+  if(h==='school' && typeof d[h].value==='number') d[h].status=d[h].value>0?'done':'fail';
+  save()
+}
+function setValue(h,v){
+  const d=getDay(); d[h]=d[h]||{}; d[h].value=v===''?null:Number(v);
+  if(h==='internet' && d[h].value!==null) d[h].status=d[h].value<=60?'done':'fail';
+  if(h==='mobility' && d[h].value!==null) d[h].status=d[h].value>=10?'done':'fail';
+  if(h==='school' && d[h].value!==null) d[h].status=d[h].value>0?'done':'fail';
+  save()
+}
+function render(){
+  const t=today(), key=iso(t), d=getDay(key);
+  document.getElementById('todayTitle').textContent='Today · '+t.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
+  document.querySelectorAll('[data-habit]').forEach(row=>{
+    const h=row.dataset.habit, rec=d[h]||{};
+    row.querySelectorAll('[data-status]').forEach(b=>{
+      b.classList.remove('active','good','bad','skip');
+      const match=(b.dataset.status==='done'&&rec.status==='done')||(b.dataset.status==='fail'&&rec.status==='fail')||(b.dataset.status==='skip'&&rec.status==='skip');
+      if(match)b.classList.add('active',rec.status==='done'?'good':rec.status==='fail'?'bad':'skip');
+    });
+    const inp=row.querySelector('[data-value]');
+    if(inp && document.activeElement!==inp) inp.value=(rec.value??'');
+  });
+  document.getElementById('notes').value=state.notes||'';
+  const dates=weekDates(), grid=document.getElementById('weekGrid'); grid.innerHTML='';
+  let totalDone=0,totalTracked=0,wake=0,workouts=0,inet=[];
+  dates.forEach(dt=>{
+    const k=iso(dt), rec=state.days[k]||{};
+    let done=0,tracked=0;
+    habits.forEach(h=>{
+      const s=rec[h]?.status;
+      if(s && s!=='skip'){tracked++; if(s==='done')done++}
+    });
+    totalDone+=done; totalTracked+=tracked;
+    if(rec.wake?.status==='done')wake++;
+    if(rec.workout?.status==='done')workouts++;
+    if(typeof rec.internet?.value==='number')inet.push(rec.internet.value);
+    const pct=tracked?Math.round(done/tracked*100):0;
+    const el=document.createElement('div');el.className='day';
+    el.innerHTML='<div class="d">'+dt.toLocaleDateString(undefined,{weekday:'short'})+'</div><div class="pct">'+pct+'%</div>';
+    grid.appendChild(el)
+  });
+  const score=totalTracked?Math.round(totalDone/totalTracked*100):0;
+  document.getElementById('weekScore').textContent=score+'%';
+  document.getElementById('weekFill').style.width=score+'%';
+  document.getElementById('wakeScore').textContent=wake+'/7';
+  document.getElementById('workoutScore').textContent=workouts+'/4';
+  document.getElementById('internetAvg').textContent=inet.length?Math.round(inet.reduce((a,b)=>a+b,0)/inet.length)+'m':'–';
+}
+document.querySelectorAll('[data-status]').forEach(b=>b.addEventListener('click',()=>setStatus(b.closest('[data-habit]').dataset.habit,b.dataset.status)));
+document.querySelectorAll('[data-value]').forEach(i=>i.addEventListener('change',()=>setValue(i.dataset.value,i.value)));
+
+document.getElementById('notes').addEventListener('input',()=>{state.notes=document.getElementById('notes').value;localStorage.setItem(KEY,JSON.stringify(state))});
+
+function weekPayload(){
+  const dates=weekDates().map(iso), days={}; dates.forEach(k=>days[k]=state.days[k]||{});
+  return {generated_at:new Date().toISOString(),week_start:dates[0],week_end:dates[6],days,notes:state.notes||''}
+}
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify(weekPayload(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='consistency-week-'+weekPayload().week_start+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
+});
+document.getElementById('copyBtn').addEventListener('click',async()=>{
+  const p=weekPayload();
+  let txt=`Week ${p.week_start} to ${p.week_end}\n`;
+  for(const [date,rec] of Object.entries(p.days)){
+    const parts=[];
+    for(const h of habits){if(rec[h]?.status)parts.push(`${h}:${rec[h].status}${rec[h].value!=null?'('+rec[h].value+')':''}`)}
+    txt+=`${date}: ${parts.join(', ') || 'no data'}\n`;
+  }
+  if(p.notes)txt+=`\nNotes: ${p.notes}`;
+  try{await navigator.clipboard.writeText(txt);alert('Weekly summary copied.')}catch(e){prompt('Copy this summary:',txt)}
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  if(confirm('Reset all tracker data on this device?')){localStorage.removeItem(KEY);location.reload()}
+});
+render();
+</script>
+</body>
+</html>
